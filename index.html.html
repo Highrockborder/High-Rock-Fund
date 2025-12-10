@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 25.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot; /&gt;
+    &lt;title&gt;High Rock Fundraiser&lt;/title&gt;
+    &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://unpkg.com/lucide@latest&quot;&gt;&lt;/script&gt;
+    &lt;link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;!-- FIREBASE IMPORTS (Only Authentication is retained) --&gt;
+    &lt;script type=&quot;module&quot;&gt;
+        import { initializeApp } from &quot;https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js&quot;;
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setLogLevel } from &quot;https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js&quot;;
+        
+        // IMPORTANT: Use setLogLevel to see detailed Firebase logs in the console
+        setLogLevel('debug');
+
+        // Global variables provided by the Canvas environment
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        if (Object.keys(firebaseConfig).length &gt; 0) {
+            window.app = initializeApp(firebaseConfig);
+            window.auth = getAuth(window.app);
+        } else {
+            console.error(&quot;Firebase config is missing or invalid. Authentication features will not work.&quot;);
+        }
+
+        // Authentication Handler
+        async function authenticate() {
+            if (!window.auth) return;
+
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(window.auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+                console.log(&quot;Firebase authentication successful.&quot;);
+            } catch (error) {
+                console.error(&quot;Firebase authentication failed:&quot;, error);
+            }
+        }
+        
+        // Listen for authentication state changes (retained for future features, but not used for data)
+        onAuthStateChanged(window.auth, (user) =&gt; {
+            if (user) {
+                window.userId = user.uid;
+            } else {
+                window.userId = 'anonymous-user';
+            }
+            console.log(&quot;Current User ID:&quot;, window.userId);
+        });
+
+        // Start authentication process
+        authenticate();
+
+    &lt;/script&gt;
+    &lt;style&gt;
+        /* --- CUSTOM VARIABLES --- */
+        :root{
+            --bg:#050505; 
+            --card:#0f0f10; 
+            --accent:#ff9a00; 
+            --muted:#9aa3ad;
+            --robux-blue: #3b82f6; 
+            --cash-green: #10b981;
+        }
+
+        /* --- BASE STYLES --- */
+        html,body{height:100%;}
+        body{
+            font-family:Inter,system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,Arial,sans-serif;
+            background:linear-gradient(180deg,#030304 0%,#060607 60%);
+            color:#e6eef6;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        /* --- UTILITY COMPONENTS --- */
+        .glass{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);border-radius:16px;}
+        .accent{color:var(--accent)}
+        .btn-accent{
+            background:linear-gradient(90deg,var(--accent),#ffc07a);
+            color:#000;
+            font-weight:700;
+            border-radius:9999px;
+            padding:10px 22px;
+            display:inline-flex;
+            align-items:center;
+            gap:.6rem;
+            box-shadow:0 8px 30px rgba(255,154,0,0.12);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .btn-accent:hover{transform:translateY(-3px)}
+        .card-raise{transition:transform .25s ease,box-shadow .25s ease}
+        .card-raise:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+
+        /* --- NAVIGATION STYLES --- */
+        .nav-link{position:relative;padding:.25rem 0; text-decoration: none !important;}
+        .nav-link::after{content:&quot;&quot;;position:absolute;left:0;right:0;height:3px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+        .nav-link:hover::after,.nav-link.active::after{transform:scaleX(1)}
+        
+        /* --- HERO MEDIA FIX --- */
+        .hero-media{position:absolute;inset:0;object-fit:cover;filter:brightness(.25);opacity:.95}
+        
+        /* --- MOBILE/DESKTOP UTILITIES --- */
+        @media (max-width:768px){.desktop-only{display:none}.mobile-only{display:block}}
+        @media (min-width:769px){.desktop-only{display:block}.mobile-only{display:none}}
+        
+        /* --- MODAL SPECIFIC STYLES --- */
+        .modal-card-bg {
+            background-color: var(--card);
+        }
+        .cash-btn-modal {
+            background-color: var(--cash-green); 
+            transition: background-color 0.2s;
+        }
+        .cash-btn-modal:hover {
+            background-color: #059669;
+        }
+        .robux-btn-modal {
+            background-color: var(--robux-blue); 
+            transition: background-color 0.2s;
+        }
+        .robux-btn-modal:hover {
+            background-color: #2563eb;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- HEADER / NAV --&gt;
+    &lt;header class=&quot;sticky top-0 z-40 bg-[rgba(3,3,3,0.65)] backdrop-blur-md border-b border-[rgba(255,255,255,0.03)]&quot;&gt;
+        &lt;div class=&quot;max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16&quot;&gt;
+            &lt;a href=&quot;#&quot; class=&quot;flex items-center gap-3&quot; onclick=&quot;navigate('home');return false;&quot;&gt;
+                &lt;div class=&quot;w-10 h-10 flex items-center justify-center&quot;&gt;
+                    &lt;!-- Placeholder Logo --&gt;
+                    &lt;img src=&quot;https://placehold.co/40x40/ff9a00/000000?text=HR&quot; alt=&quot;High Rock Logo&quot; class=&quot;w-full h-full object-contain rounded-lg&quot;&gt;
+                &lt;/div&gt;
+                &lt;div&gt;
+                    &lt;div class=&quot;text-lg font-extrabold&quot;&gt;High Rock&lt;/div&gt;
+                    &lt;div class=&quot;text-xs text-[var(--muted)] -mt-1&quot;&gt;Fundraiser&lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/a&gt;
+
+            &lt;!-- NAVIGATION LINKS --&gt;
+            &lt;nav class=&quot;hidden md:flex items-center gap-8 text-sm text-[var(--muted)]&quot;&gt;
+                &lt;a class=&quot;nav-link active&quot; href=&quot;#&quot; data-page=&quot;home&quot; onclick=&quot;navigate('home');return false;&quot;&gt;Home&lt;/a&gt;
+                &lt;a class=&quot;nav-link&quot; href=&quot;#&quot; data-page=&quot;donation&quot; onclick=&quot;navigate('donation');return false;&quot;&gt;Donation&lt;/a&gt;
+                &lt;a class=&quot;nav-link&quot; href=&quot;#&quot; data-page=&quot;terms&quot; onclick=&quot;navigate('terms');return false;&quot;&gt;Terms of Service&lt;/a&gt;
+                &lt;a class=&quot;nav-link&quot; href=&quot;#&quot; data-page=&quot;support&quot; onclick=&quot;navigate('support');return false;&quot;&gt;Support&lt;/a&gt;
+            &lt;/nav&gt;
+
+            &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+                &lt;!-- Only mobile toggle remains --&gt;
+                &lt;button class=&quot;mobile-only text-[var(--muted)]&quot; id=&quot;mobile-toggle&quot; aria-expanded=&quot;false&quot; onclick=&quot;toggleMobile()&quot;&gt;
+                    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; class=&quot;w-6 h-6&quot; fill=&quot;none&quot; viewBox=&quot;0 0 24 24&quot; stroke=&quot;currentColor&quot;&gt;&lt;path stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M4 6h16M4 12h16M4 18h16&quot;/&gt;&lt;/svg&gt;
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Mobile menu --&gt;
+        &lt;div id=&quot;mobile-menu&quot; class=&quot;hidden md:hidden&quot;&gt;
+            &lt;div class=&quot;px-4 pt-4 pb-6 space-y-2&quot;&gt;
+                &lt;a class=&quot;block py-2 px-3 rounded text-white hover:bg-[rgba(255,255,255,0.02)]&quot; href=&quot;#&quot; onclick=&quot;navigate('home');return false;&quot;&gt;Home&lt;/a&gt;
+                &lt;a class=&quot;block py-2 px-3 rounded text-white hover:bg-[rgba(255,255,255,0.02)]&quot; href=&quot;#&quot; onclick=&quot;navigate('donation');return false;&quot;&gt;Donation&lt;/a&gt;
+                &lt;a class=&quot;block py-2 px-3 rounded text-white hover:bg-[rgba(255,255,255,0.02)]&quot; href=&quot;#&quot; onclick=&quot;navigate('terms');return false;&quot;&gt;Terms of Service&lt;/a&gt;
+                &lt;a class=&quot;block py-2 px-3 rounded text-white hover:bg-[rgba(255,255,255,0.02)]&quot; href=&quot;#&quot; onclick=&quot;navigate('support');return false;&quot;&gt;Support&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;!-- MAIN APP (client-side route sections) --&gt;
+    &lt;main class=&quot;pt-6 sm:pt-10&quot;&gt;
+
+        &lt;!-- HOME SECTION --&gt;
+        &lt;section id=&quot;home&quot; class=&quot;page-section&quot;&gt;
+            &lt;!-- 1. HERO SECTION --&gt;
+            &lt;div class=&quot;relative h-[72vh] flex items-center justify-center overflow-hidden&quot;&gt;
+                &lt;!-- Placeholder Background Image URL (no distracting text) --&gt;
+                &lt;img class=&quot;hero-media&quot; src=&quot;https://placehold.co/1200x800/232323/232323&quot; alt=&quot;Hero Background&quot;/&gt;
+                &lt;div class=&quot;relative z-10 max-w-5xl px-6 text-center&quot;&gt;
+                    &lt;h1 class=&quot;text-5xl md:text-7xl font-extrabold leading-tight mb-4&quot;&gt;&lt;span class=&quot;accent&quot;&gt;Fundraiser&lt;/span&gt; for High Rock&lt;/h1&gt;
+                    &lt;p class=&quot;text-lg text-[var(--muted)] max-w-3xl mx-auto mb-8&quot;&gt;
+                        Your contributions go directly toward purchasing professional design assets (logos, banners, graphics) to elevate our server's brand and visual identity.
+                    &lt;/p&gt;
+                    &lt;div class=&quot;flex items-center justify-center gap-4&quot;&gt;
+                        &lt;button class=&quot;btn-accent&quot; onclick=&quot;navigate('donation');&quot;&gt;
+                            &lt;i data-lucide=&quot;wallet&quot; class=&quot;w-5 h-5&quot;&gt;&lt;/i&gt;
+                            Donate Now
+                        &lt;/button&gt;
+                        &lt;a href=&quot;#&quot; class=&quot;text-sm text-[var(--muted)] hover:text-white transition&quot; onclick=&quot;navigate('support');return false;&quot;&gt;Get Support&lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 2. DESCRIPTION SECTION (Scrollable Content) --&gt;
+            &lt;div class=&quot;max-w-7xl mx-auto px-6 py-16&quot;&gt;
+                &lt;!-- Description content centered and full width --&gt;
+                &lt;div class=&quot;max-w-4xl mx-auto&quot;&gt; 
+                    &lt;h2 class=&quot;text-4xl font-extrabold mb-4&quot;&gt;&lt;span class=&quot;accent&quot;&gt;Why&lt;/span&gt; We Fundraise&lt;/h2&gt;
+                    &lt;p class=&quot;text-[var(--muted)] mb-4&quot;&gt;
+                        High Rock is more than just a server; it's a growing community built on the pillars of creativity and collaboration. As we expand, our visual identity must match our ambition. This fundraiser is strictly dedicated to purchasing high-quality, professional assets.
+                    &lt;/p&gt;
+                    &lt;p class=&quot;text-[var(--muted)] mb-6&quot;&gt;
+                        This includes custom logos, professionally designed banners for social media and platforms like Discord, and unique in-game textures and graphics. These elements are crucial for ensuring a polished, trustworthy, and appealing brand image that attracts new members and retains our current loyal community.
+                    &lt;/p&gt;
+                    &lt;button class=&quot;btn-accent&quot; onclick=&quot;navigate('donation');&quot;&gt;
+                        &lt;i data-lucide=&quot;heart&quot; class=&quot;w-5 h-5&quot;&gt;&lt;/i&gt;
+                        See Tiers &amp; Donate
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;!-- 3. CHARITY DISCLOSURE (Grey Text at Bottom) --&gt;
+            &lt;div class=&quot;max-w-7xl mx-auto px-6 pb-16 pt-8 text-center&quot;&gt;
+                &lt;p class=&quot;text-sm text-[var(--muted)]&quot;&gt;
+                    We believe in giving back. &lt;span class=&quot;accent font-semibold&quot;&gt;10% of all cash donations&lt;/span&gt; are contributed to the 
+                    &lt;a href=&quot;https://www.edf.org/&quot; target=&quot;_blank&quot; class=&quot;underline hover:text-white transition&quot;&gt;Environmental Defense Fund (EDF)&lt;/a&gt; 
+                    to support their critical work.
+                &lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- DONATION SECTION (Fundraiser Tiers only) --&gt;
+        &lt;section id=&quot;donation&quot; class=&quot;page-section py-16 hidden&quot;&gt;
+            &lt;div class=&quot;max-w-7xl mx-auto px-6&quot;&gt;
+                &lt;div class=&quot;text-center mb-10&quot;&gt;
+                    &lt;h2 class=&quot;text-4xl font-extrabold&quot;&gt;&lt;span class=&quot;accent&quot;&gt;Choose&lt;/span&gt; Your Contribution Level&lt;/h2&gt;
+                    &lt;p class=&quot;text-[var(--muted)] mt-3&quot;&gt;Select a tier below. All funds go toward server visual improvements and development assets.&lt;/p&gt;
+                &lt;/div&gt;
+                
+                &lt;!-- Donation Tiers Grid --&gt;
+                &lt;h3 class=&quot;text-3xl font-extrabold mb-6&quot;&gt;Select a Donation Tier&lt;/h3&gt;
+                &lt;div id=&quot;donation-grid&quot; class=&quot;grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6&quot;&gt;
+                    &lt;!-- Donation cards will be injected here by JavaScript --&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- TERMS OF SERVICE SECTION (Content unchanged) --&gt;
+        &lt;section id=&quot;terms&quot; class=&quot;page-section py-16 hidden&quot;&gt;
+            &lt;div class=&quot;max-w-7xl mx-auto px-6&quot;&gt;
+                &lt;h2 class=&quot;text-4xl font-extrabold mb-8 text-center&quot;&gt;&lt;span class=&quot;accent&quot;&gt;Terms&lt;/span&gt; of Service Agreement&lt;/h2&gt;
+
+                &lt;div class=&quot;lg:grid lg:grid-cols-4 gap-10&quot;&gt;
+
+                    &lt;!-- Table of Contents (TOC) - Sidebar --&gt;
+                    &lt;nav class=&quot;lg:col-span-1 mb-8 lg:mb-0&quot;&gt;
+                        &lt;div class=&quot;lg:sticky lg:top-[calc(64px+2rem)] glass p-4 space-y-2&quot;&gt;
+                            &lt;h3 class=&quot;font-bold text-lg mb-2 text-white&quot;&gt;Contents (17 Clauses)&lt;/h3&gt;
+                            
+                            &lt;!-- I. Governance and Acceptance (1-3) --&gt;
+                            &lt;div class=&quot;font-bold text-[var(--accent)] mt-4 mb-1&quot;&gt;I. Governance and Acceptance&lt;/div&gt;
+                            &lt;a href=&quot;#clause-1&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;1. Acceptance of Terms&lt;/a&gt;
+                            &lt;a href=&quot;#clause-2&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;2. Definitions&lt;/a&gt;
+                            &lt;a href=&quot;#clause-3&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;3. Modification of Terms&lt;/a&gt;
+
+                            &lt;!-- II. Intellectual Property &amp; License Grant (4-6) --&gt;
+                            &lt;div class=&quot;font-bold text-[var(--accent)] mt-4 mb-1&quot;&gt;II. Intellectual Property &amp; License Grant&lt;/div&gt;
+                            &lt;a href=&quot;#clause-4&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;4. Ownership and Service IP&lt;/a&gt;
+                            &lt;a href=&quot;#clause-5&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;5. Assignment of User Content Copyright&lt;/a&gt;
+                            &lt;a href=&quot;#clause-6&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;6. User License for Submitted Content&lt;/a&gt;
+
+                            &lt;!-- III. User Conduct and Fundraising Policy (7-10) --&gt;
+                            &lt;div class=&quot;font-bold text-[var(--accent)] mt-4 mb-1&quot;&gt;III. User Conduct and Fundraising Policy&lt;/div&gt;
+                            &lt;a href=&quot;#clause-7&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;7. Acceptable Use Policy (AUP)&lt;/a&gt;
+                            &lt;a href=&quot;#clause-8&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;8. Account Security and Responsibilities&lt;/a&gt;
+                            &lt;a href=&quot;#clause-9&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;9. Fundraising Disclosures and Intent&lt;/a&gt;
+                            &lt;a href=&quot;#clause-10&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;10. Donation Finality and Refunds&lt;/a&gt;
+
+                            &lt;!-- IV. Disclaimers and Liability (11-14) --&gt;
+                            &lt;div class=&quot;font-bold text-[var(--accent)] mt-4 mb-1&quot;&gt;IV. Disclaimers and Liability&lt;/div&gt;
+                            &lt;a href=&quot;#clause-11&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;11. Disclaimer of Warranties&lt;/a&gt;
+                            &lt;a href=&quot;#clause-12&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;12. Limitation of Liability&lt;/a&gt;
+                            &lt;a href=&quot;#clause-13&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;13. Indemnification&lt;/a&gt;
+                            &lt;a href=&quot;#clause-14&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;14. Third-Party Links and Services&lt;/a&gt;
+
+                            &lt;!-- V. Miscellaneous Provisions (15-17) --&gt;
+                            &lt;div class=&quot;font-bold text-[var(--accent)] mt-4 mb-1&quot;&gt;V. Miscellaneous Provisions&lt;/div&gt;
+                            &lt;a href=&quot;#clause-15&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;15. Termination of Access&lt;/a&gt;
+                            &lt;a href=&quot;#clause-16&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;16. Governing Law and Jurisdiction&lt;/a&gt;
+                            &lt;a href=&quot;#clause-17&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1 pl-3&quot;&gt;17. Entire Agreement and Severability&lt;/a&gt;
+                            
+                            &lt;div class=&quot;pt-2 border-t border-[rgba(255,255,255,0.05)] mt-4&quot;&gt;
+                                &lt;a href=&quot;#contact&quot; class=&quot;block text-sm text-[var(--muted)] hover:text-white transition py-1&quot;&gt;Contact Information&lt;/a&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/nav&gt;
+
+                    &lt;!-- Main Content --&gt;
+                    &lt;div class=&quot;lg:col-span-3&quot;&gt;
+                        &lt;div class=&quot;glass p-8 space-y-6 text-[var(--muted)] text-base leading-relaxed&quot;&gt;
+                            
+                            &lt;!-- I. Governance and Acceptance --&gt;
+                            &lt;h3 id=&quot;governance&quot; class=&quot;font-bold text-2xl text-white pt-2&quot;&gt;I. Governance and Acceptance&lt;/h3&gt;
+                            
+                            &lt;h4 id=&quot;clause-1&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;1. Acceptance of Terms&lt;/h4&gt;
+                            &lt;p&gt;This document represents a legally binding agreement between you (&quot;User&quot; or &quot;you&quot;) and the Service Provider. Your access to and use of the Service is conditioned upon your acceptance of and compliance with these Terms.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-2&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;2. Definitions&lt;/h4&gt;
+                            &lt;ul class=&quot;list-disc list-inside space-y-1 pl-4&quot;&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;Service Provider,&quot; &quot;We,&quot; &quot;Us,&quot; &quot;Our&quot;:&lt;/strong&gt; Refers to the operator of this Platform and the owner, Vel1city.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;User,&quot; &quot;You&quot;:&lt;/strong&gt; Refers to any person or entity accessing or using the Service.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;Platform/Website&quot;:&lt;/strong&gt; Refers to all web pages, content, and interactive features provided under this domain.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;Content&quot;:&lt;/strong&gt; Includes all text, images, logos, designs, data, and software code on the Platform.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;Server Fund&quot;:&lt;/strong&gt; Funds raised for the specific purpose of maintaining and operating the community server.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;&quot;Charity Fund&quot;:&lt;/strong&gt; Funds collected for the express purpose of donating to the Environmental Defense Fund (EDF).&lt;/li&gt;
+                            &lt;/ul&gt;
+
+                            &lt;h4 id=&quot;clause-3&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;3. Modification of Terms&lt;/h4&gt;
+                            &lt;p&gt;We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide reasonable notice of any material changes. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.&lt;/p&gt;
+
+                            &lt;!-- II. Intellectual Property &amp; License Grant --&gt;
+                            &lt;h3 id=&quot;ip&quot; class=&quot;font-bold text-2xl text-white pt-6 border-t border-[rgba(255,255,255,0.05)]&quot;&gt;II. Intellectual Property &amp; License Grant&lt;/h3&gt;
+                            
+                            &lt;h4 id=&quot;clause-4&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;4. Ownership and Service Intellectual Property&lt;/h4&gt;
+                            &lt;p&gt;The Service, its original Content (excluding User Content), features, and functionality are and will remain the exclusive property of the Service Provider and the owning entity, Vel1city. Our trademarks, trade dress, and intellectual property may not be used in connection with any product or service without the prior written consent of Vel1city.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-5&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;5. Assignment of User Content Copyright to Vel1city&lt;/h4&gt;
+                            &lt;p&gt;In consideration of using the Platform, the User hereby irrevocably and perpetually assigns, transfers, and conveys to Vel1city the entire right, title, and interest in and to any and all copyright, proprietary rights, and intellectual property rights in any content, data, submissions, artwork, designs, or textual contributions created by the User and uploaded, submitted, or otherwise shared on or through the Website or Server platform. This assignment includes the exclusive rights to reproduce, distribute, perform, display, and create derivative works of such content, globally, in any medium now known or later developed.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-6&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;6. User License for Submitted Content&lt;/h4&gt;
+                            &lt;p&gt;For any content or contributions not deemed covered by the assignment in Section 5, you grant the Service Provider a limited, non-exclusive, royalty-free, and worldwide license to use, modify, publish, and distribute such content solely for the purpose of operating, maintaining, and promoting the Platform and the associated server.&lt;/p&gt;
+
+                            &lt;!-- III. User Conduct and Fundraising Policy --&gt;
+                            &lt;h3 id=&quot;conduct&quot; class=&quot;font-bold text-2xl text-white pt-6 border-t border-[rgba(255,255,255,0.05)]&quot;&gt;III. User Conduct and Fundraising Policy&lt;/h3&gt;
+
+                            &lt;h4 id=&quot;clause-7&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;7. Acceptable Use Policy (AUP)&lt;/h4&gt;
+                            &lt;p&gt;You agree not to use the Service:&lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside space-y-1 pl-4&quot;&gt;
+                                &lt;li&gt;In any way that violates any applicable national or international law or regulation.&lt;/li&gt;
+                                &lt;li&gt;To harass, abuse, insult, harm, defame, or discriminate based on gender, sexual orientation, religion, ethnicity, race, age, national origin, or disability.&lt;/li&gt;
+                                &lt;li&gt;To transmit any material that contains software viruses or any other computer code, files, or programs designed to interrupt, destroy, or limit the functionality of any computer software or hardware.&lt;/li&gt;
+                            &lt;/ul&gt;
+
+                            &lt;h4 id=&quot;clause-8&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;8. Account Security and Responsibilities&lt;/h4&gt;
+                            &lt;p&gt;If you create an account, you are responsible for maintaining the security of your password and notifying the Service Provider immediately upon becoming aware of any breach of security or unauthorized use of your account.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-9&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;9. Fundraising Disclosures and Intent&lt;/h4&gt;
+                            &lt;p&gt;The Platform engages in two types of fundraising:&lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside space-y-1 pl-4&quot;&gt;
+                                &lt;li&gt;&lt;strong&gt;Server Fund:&lt;/strong&gt; Contributions are used entirely for server operational costs (hosting, maintenance, software).&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Charity Fund:&lt;/strong&gt; Contributions are directed to the official Environmental Defense Fund (EDF) and are subject to EDF's own terms and conditions. The Service Provider acts as an independent supporter and is not an agent of, nor officially endorsed by, the EDF.&lt;/li&gt;
+                            &lt;/ul&gt;
+
+                            &lt;h4 id=&quot;clause-10&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;10. Donation Finality and Refunds&lt;/h4&gt;
+                            &lt;p&gt;All contributions, whether for the Server Fund or the Charity Fund, are considered non-refundable charitable transactions or gifts. Once a payment or contribution (in USD or equivalent currency) is processed, the transaction is final. The Service Provider is under no obligation to issue refunds.&lt;/p&gt;
+
+                            &lt;!-- IV. Disclaimers and Liability --&gt;
+                            &lt;h3 id=&quot;disclaimers&quot; class=&quot;font-bold text-2xl text-white pt-6 border-t border-[rgba(255,255,255,0.05)]&quot;&gt;IV. Disclaimers and Liability&lt;/h3&gt;
+
+                            &lt;h4 id=&quot;clause-11&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;11. Disclaimer of Warranties&lt;/h4&gt;
+                            &lt;p&gt;The Platform and all content are provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis. The Service Provider disclaims all warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-12&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;12. Limitation of Liability&lt;/h4&gt;
+                            &lt;p&gt;In no event shall the Service Provider, Vel1city, or its staff be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any content obtained from the Service; and (iii) unauthorized access, use, or alteration of your transmissions or content.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-13&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;13. Indemnification&lt;/h4&gt;
+                            &lt;p&gt;You agree to defend, indemnify, and hold harmless the Service Provider, Vel1city, and its staff from and against any and all claims, damages, liabilities, costs, and expenses (including attorneys' fees) arising from: (a) your use of the Service; (b) your breach of these Terms; or (c) your violation of any law or the rights of any third party.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-14&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;14. Third-Party Links and Services&lt;/h4&gt;
+                            &lt;p&gt;The Service may contain links to third-party websites or services (e.g., the official EDF website). We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party websites or services. We strongly advise you to read the terms and conditions and privacy policies of any third-party websites that you visit.&lt;/p&gt;
+
+                            &lt;!-- V. Miscellaneous Provisions --&gt;
+                            &lt;h3 id=&quot;miscellaneous&quot; class=&quot;font-bold text-2xl text-white pt-6 border-t border-[rgba(255,255,255,0.05)]&quot;&gt;V. Miscellaneous Provisions&lt;/h3&gt;
+                            
+                            &lt;h4 id=&quot;clause-15&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;15. Termination of Access&lt;/h4&gt;
+                            &lt;p&gt;We may terminate or suspend your access to the Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. All provisions of the Terms which by their nature should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity, and limitations of liability.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-16&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;16. Governing Law and Jurisdiction&lt;/h4&gt;
+                            &lt;p&gt;This Agreement shall be governed and construed in accordance with the laws of the State of Delaware, United States, without regard to its conflict of law provisions. You agree to submit to the personal jurisdiction and venue of the state and federal courts located within New Castle County, Delaware, for the purpose of litigating all such claims or disputes.&lt;/p&gt;
+
+                            &lt;h4 id=&quot;clause-17&quot; class=&quot;font-semibold text-xl text-white&quot;&gt;17. Entire Agreement and Severability&lt;/h4&gt;
+                            &lt;p&gt;These Terms constitute the entire agreement between us regarding our Service, and supersede and replace any prior agreements we might have had between us regarding the Service.&lt;/p&gt;
+
+                            &lt;!-- Contact Information --&gt;
+                            &lt;h3 id=&quot;contact&quot; class=&quot;font-bold text-2xl text-white pt-6 border-t border-[rgba(255,255,255,0.05)]&quot;&gt;Contact Information:&lt;/h3&gt;
+                            &lt;p&gt;For any questions regarding these Terms, please contact the Service Provider.&lt;/p&gt;
+
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- SUPPORT SECTION --&gt;
+        &lt;section id=&quot;support&quot; class=&quot;page-section py-16 hidden&quot;&gt;
+            &lt;div class=&quot;max-w-4xl mx-auto px-6&quot;&gt;
+                &lt;h2 class=&quot;text-3xl font-extrabold mb-4&quot;&gt;&lt;span class=&quot;accent&quot;&gt;Get&lt;/span&gt; Support&lt;/h2&gt;
+                &lt;div class=&quot;glass p-6 space-y-4&quot;&gt;
+                    &lt;!-- PRIMARY TICKET SUPPORT --&gt;
+                    &lt;h3 class=&quot;font-semibold text-xl flex items-center&quot;&gt;
+                        &lt;i data-lucide=&quot;ticket&quot; class=&quot;w-6 h-6 mr-3 text-[var(--accent)]&quot;&gt;&lt;/i&gt;
+                        Primary Support Channel (Development Server)
+                    &lt;/h3&gt;
+                    &lt;p class=&quot;text-[var(--muted)]&quot;&gt;For assistance regarding payment issues, server questions, or general inquiries, please open a **general support ticket** in the High Rock development server. This ensures faster tracking and resolution.&lt;/p&gt;
+                    
+                    &lt;!-- Discord Link --&gt;
+                    &lt;div class=&quot;flex justify-center&quot;&gt;
+                        &lt;a href=&quot;https://discord.gg/HpreRKDQdY&quot; target=&quot;_blank&quot; class=&quot;btn-accent px-6 py-3 justify-center transform transition duration-150 active:scale-95&quot;&gt;
+                            &lt;i data-lucide=&quot;external-link&quot; class=&quot;w-5 h-5&quot;&gt;&lt;/i&gt;
+                            Go to Development Server
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                    &lt;p class=&quot;text-sm text-[var(--muted)] mt-4 text-center&quot;&gt;Note: You will be redirected to an external site to complete the payment.&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+    &lt;/main&gt;
+
+    &lt;!-- FOOTER --&gt;
+    &lt;footer class=&quot;mt-12 border-t border-[rgba(255,255,255,0.03)] bg-[rgba(3,3,3,0.6)] py-8&quot;&gt;
+        &lt;div class=&quot;max-w-7xl mx-auto px-6 text-center text-[var(--muted)]&quot;&gt;
+            &lt;div class=&quot;mb-4&quot;&gt;&amp;copy; &lt;span id=&quot;year&quot;&gt;&lt;/span&gt; High Rock Fundraiser | All rights reserved.&lt;/div&gt;
+            &lt;div class=&quot;flex items-center justify-center gap-6 text-sm&quot;&gt;
+                &lt;a href=&quot;#&quot; onclick=&quot;navigate('terms');return false;&quot; class=&quot;hover:text-white&quot;&gt;Terms&lt;/a&gt;
+                &lt;a href=&quot;#&quot; onclick=&quot;navigate('support');return false;&quot; class=&quot;hover:text-white&quot;&gt;Support&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/footer&gt;
+
+    &lt;!-- PAYMENT MODAL --&gt;
+    &lt;div id=&quot;payment-modal&quot; class=&quot;fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4&quot; onclick=&quot;closeModal()&quot;&gt;
+        &lt;div class=&quot;modal-card-bg p-6 rounded-xl shadow-2xl w-full max-w-sm&quot; onclick=&quot;event.stopPropagation()&quot;&gt;
+            &lt;div class=&quot;flex justify-between items-center mb-4&quot;&gt;
+                &lt;h2 class=&quot;text-2xl font-bold text-white&quot; id=&quot;modal-title&quot;&gt;Select Payment Method&lt;/h2&gt;
+                &lt;button onclick=&quot;closeModal()&quot; class=&quot;text-gray-400 hover:text-white transition duration-200&quot;&gt;
+                    &lt;i data-lucide=&quot;x&quot; class=&quot;w-6 h-6&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+            &lt;/div&gt;
+            
+            &lt;p class=&quot;text-gray-400 mb-6&quot;&gt;Choose your currency to proceed with the donation.&lt;/p&gt;
+
+            &lt;!-- Cash Button (Green) --&gt;
+            &lt;a id=&quot;cash-link&quot; target=&quot;_blank&quot; class=&quot;cash-btn-modal flex items-center justify-between p-4 mb-4 rounded-xl font-semibold text-lg text-white shadow-lg transform transition duration-200 hover:scale-[1.01] cursor-pointer&quot; 
+                onclick=&quot;closeModal(); showMessage('Thank you! Redirecting to PayPal for secure payment...')&quot;&gt;
+                &lt;div class=&quot;flex items-center&quot;&gt;
+                    &lt;i data-lucide=&quot;dollar-sign&quot; class=&quot;w-5 h-5 mr-3&quot;&gt;&lt;/i&gt;
+                    &lt;span&gt;Cash&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;span id=&quot;cash-amount&quot; class=&quot;font-mono&quot;&gt;$X.XX&lt;/span&gt;
+            &lt;/a&gt;
+
+            &lt;!-- Robux Button (Blue) --&gt;
+            &lt;a id=&quot;robux-link&quot; target=&quot;_blank&quot; class=&quot;robux-btn-modal flex items-center justify-between p-4 rounded-xl font-semibold text-lg text-white shadow-lg transform transition duration-200 hover:scale-[1.01] cursor-pointer&quot; onclick=&quot;closeModal()&quot;&gt;
+                &lt;div class=&quot;flex items-center&quot;&gt;
+                    &lt;i data-lucide=&quot;gem&quot; class=&quot;w-5 h-5 mr-3&quot;&gt;&lt;/i&gt;
+                    &lt;span&gt;Robux&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;span id=&quot;robux-amount&quot; class=&quot;font-mono&quot;&gt;R$Y,YYY&lt;/span&gt;
+            &lt;/a&gt;
+            &lt;p class=&quot;text-xs text-[var(--muted)] mt-4&quot;&gt;Note: You will be redirected to an external site to complete the payment.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Custom Message Box --&gt;
+    &lt;div id=&quot;message-box&quot; class=&quot;fixed bottom-4 right-4 left-4 md:left-auto z-[9999] opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none&quot;&gt;
+        &lt;div class=&quot;glass p-4 rounded-xl shadow-2xl max-w-sm ml-auto mr-auto md:mr-0&quot;&gt;
+            &lt;p id=&quot;message-text&quot; class=&quot;text-sm font-medium&quot;&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        // =======================================================
+        // --- 1. CONFIGURATION PLACEHOLDERS (START HERE) ---
+        // =======================================================
+        const config = {
+            // Base URL for PayPal donation links (The first part of the link before the unique ID)
+            PAYPAL_DONATION_BASE_URL: 'https://www.paypal.com/ncp/payment/',
+            
+            // Base URL for the Roblox Game Pass purchases
+            ROBLOX_GAME_PASS_BASE_URL: 'https://www.roblox.com/game-pass/',
+
+            // Map tier config IDs to their specific link suffixes/IDs.
+            // These IDs match the links you provided.
+            TIER_LINK_MAP: {
+                'tier-1': { // $1.00 / R$ 5
+                    robux_id: '1617074252', // Roblox Game Pass ID
+                    cash_id: 'CPQALUV58EBLE', // PayPal Unique Link ID
+                },
+                'tier-2': { // $2.00 / R$ 10
+                    robux_id: '1616223998',
+                    cash_id: 'C7XTCC7EY36BY',
+                },
+                'tier-3': { // $3.00 / R$ 20
+                    robux_id: '1616338025',
+                    cash_id: 'L9DGSB8HTUD9J',
+                },
+                'tier-4': { // $5.00 / R$ 50
+                    robux_id: '1615966183',
+                    cash_id: '4BD9EQJC3Z23A',
+                },
+                'tier-5': { // $10.00 / R$ 100
+                    robux_id: '1616715777',
+                    cash_id: 'AUAJGD58NBUG2',
+                },
+                'tier-6': { // $20.00 / R$ 200
+                    robux_id: '1616964316',
+                    cash_id: 'U63VFS8QLMLSQ',
+                },
+                'tier-7': { // $25.00 / R$ 500
+                    robux_id: '1616767745',
+                    cash_id: 'RJXUW3NFNQU8E',
+                },
+                'tier-8': { // $30.00 / R$ 1000
+                    robux_id: '1616423871',
+                    cash_id: '7XMVYH8KLMM72',
+                },
+                'tier-9': { // $35.00 / R$ 2000
+                    robux_id: '1616894457',
+                    cash_id: 'XLHAW66BC42X4',
+                },
+                'tier-10': { // $40.00 / R$ 3000
+                    robux_id: '1616433996',
+                    cash_id: 'AYRXZA8HNQP4S',
+                },
+            },
+        };
+        // =======================================================
+        // --- 2. DONATION TIER DATA ---
+        // =======================================================
+
+        // Data containing all donation tiers (now referencing the config map)
+        const donationTiers = [
+            { robux: 5, cash: 1.00, title: &quot;Small Contribution&quot;, icon: &quot;gift&quot;, configId: &quot;tier-1&quot; },
+            { robux: 10, cash: 2.00, title: &quot;Bronze Contributor&quot;, icon: &quot;flame&quot;, configId: &quot;tier-2&quot; },
+            { robux: 20, cash: 3.00, title: &quot;Silver Supporter&quot;, icon: &quot;star&quot;, configId: &quot;tier-3&quot; },
+            { robux: 50, cash: 5.00, title: &quot;Gold Partner&quot;, icon: &quot;medal&quot;, configId: &quot;tier-4&quot; },
+            { robux: 100, cash: 10.00, title: &quot;Platinum Sponsor&quot;, icon: &quot;crown&quot;, configId: &quot;tier-5&quot; },
+            { robux: 200, cash: 20.00, title: &quot;Diamond Donor&quot;, icon: &quot;diamond&quot;, configId: &quot;tier-6&quot; },
+            { robux: 500, cash: 25.00, title: &quot;Elite Benefactor&quot;, icon: &quot;zap&quot;, configId: &quot;tier-7&quot; },
+            { robux: 1000, cash: 30.00, title: &quot;High-Rock Patron&quot;, icon: &quot;rocket&quot;, configId: &quot;tier-8&quot; },
+            { robux: 2000, cash: 35.00, title: &quot;Legendary Investor&quot;, icon: &quot;trophy&quot;, configId: &quot;tier-9&quot; },
+            { robux: 3000, cash: 40.00, title: &quot;Celestial Angel&quot;, icon: &quot;sunrise&quot;, configId: &quot;tier-10&quot; },
+        ];
+
+
+        const donationGrid = document.getElementById('donation-grid');
+        const paymentModal = document.getElementById('payment-modal');
+        const cashLink = document.getElementById('cash-link');
+        const robuxLink = document.getElementById('robux-link');
+        const cashAmountDisplay = document.getElementById('cash-amount');
+        const robuxAmountDisplay = document.getElementById('robux-amount');
+        const modalTitle = document.getElementById('modal-title');
+        
+        // These variables are only needed to set the modal UI text, not for logging now
+        let currentDonationCashAmount = 0; 
+        let currentDonationRobuxValue = 0; 
+
+        // Helper function to format Robux amount with commas
+        window.formatRobux = (amount) =&gt; {
+            return amount.toLocaleString('en-US');
+        };
+
+        // Helper function to format Cash amount
+        const formatCash = (amount) =&gt; {
+            return amount.toFixed(2);
+        };
+        
+        /**
+         * Copies text to the clipboard and shows a message.
+         */
+        window.copyToClipboard = function(text, name) {
+            try {
+                // Use document.execCommand('copy') for better compatibility in iFrames
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                window.showMessage(`${name} copied to clipboard: ${text}`);
+            } catch (err) {
+                console.error('Could not copy text: ', err);
+                window.showMessage('Failed to copy. Please copy manually.');
+            }
+        };
+
+
+        /**
+         * Opens the payment selection modal.
+         */
+        function openModal(tierConfigId, r_amount, c_amount, title) {
+            const tierLinks = config.TIER_LINK_MAP[tierConfigId];
+
+            if (!tierLinks) {
+                window.showMessage(`Configuration error: Tier ID ${tierConfigId} is missing link definitions.`);
+                return;
+            }
+
+            // Construct the full URLs using the base URLs and specific IDs
+            const cash_link = config.PAYPAL_DONATION_BASE_URL + tierLinks.cash_id;
+            const robux_link = config.ROBLOX_GAME_PASS_BASE_URL + tierLinks.robux_id + '/High-Rock-Fundraiser'; // Appending title for clarity, though ID is main part
+
+            modalTitle.textContent = `Purchase: ${title}`;
+            currentDonationCashAmount = c_amount; 
+            currentDonationRobuxValue = r_amount; 
+
+            // Set Cash link and display
+            cashLink.href = cash_link;
+            cashAmountDisplay.textContent = `$${formatCash(c_amount)}`;
+
+            // Set Robux link and display
+            robuxLink.href = robux_link;
+            robuxAmountDisplay.textContent = `R$${window.formatRobux(r_amount)}`;
+            
+            // Display the modal
+            paymentModal.classList.remove('hidden');
+            paymentModal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling background
+            lucide.createIcons(); // Re-render icons after adding new content
+        }
+
+        // Function to dynamically create a donation card
+        function createCard(tier) {
+            
+            const card = document.createElement('div');
+            card.className = 'glass p-6 card-raise flex flex-col justify-between';
+            
+            card.innerHTML = `
+                &lt;div&gt;
+                    &lt;i data-lucide=&quot;${tier.icon}&quot; class=&quot;w-8 h-8 text-[var(--accent)] mb-4&quot;&gt;&lt;/i&gt;
+                    &lt;h3 class=&quot;text-xl font-bold text-white mb-2&quot;&gt;${tier.title}&lt;/h3&gt;
+                    &lt;p class=&quot;text-[var(--muted)] text-sm mb-6&quot;&gt;
+                        A vital contribution that helps fund essential design assets.
+                    &lt;/p&gt;
+                    &lt;p class=&quot;text-4xl font-extrabold accent mb-6&quot;&gt;
+                        R$ ${window.formatRobux(tier.robux)}
+                    &lt;/p&gt;
+                &lt;/div&gt;
+                &lt;button 
+                    class=&quot;btn-accent w-full justify-center transform transition duration-150 active:scale-95 mt-6&quot;
+                    onclick=&quot;openModal('${tier.configId}', ${tier.robux}, ${tier.cash}, '${tier.title}')&quot;
+                &gt;
+                    &lt;i data-lucide=&quot;shopping-cart&quot; class=&quot;w-4 h-4&quot;&gt;&lt;/i&gt;
+                    Purchase
+                &lt;/button&gt;
+            `;
+            donationGrid.appendChild(card);
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            paymentModal.classList.remove('flex');
+            paymentModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Re-enable background scrolling
+        }
+
+        // Simple client-side routing to toggle sections.
+        function navigate(page){
+            const pages=['home','donation','terms','support'];
+            pages.forEach(p=&gt;{
+                const el=document.getElementById(p);
+                if(!el) return;
+                el.style.display=(p===page)?'block':'none';
+            });
+            // update nav active state
+            document.querySelectorAll('a[data-page]').forEach(a=&gt;a.classList.toggle('active', a.getAttribute('data-page')===page));
+            // scroll to top for convenience
+            window.scrollTo({top:0,behavior:'smooth'});
+            // close mobile menu if open
+            document.getElementById('mobile-menu')?.classList.add('hidden');
+            document.getElementById('mobile-toggle')?.setAttribute('aria-expanded','false');
+        }
+
+        // Function to display messages instead of alert()
+        let messageTimeout;
+        window.showMessage = function(message) { // Exposed globally
+            const box = document.getElementById('message-box');
+            const text = document.getElementById('message-text');
+
+            if (messageTimeout) { clearTimeout(messageTimeout); }
+
+            text.textContent = message;
+            box.classList.remove('opacity-0', 'pointer-events-none');
+            box.classList.add('opacity-100');
+
+            messageTimeout = setTimeout(() =&gt; {
+                box.classList.remove('opacity-100');
+                box.classList.add('opacity-0', 'pointer-events-none');
+            }, 4000);
+        }
+
+        function toggleMobile(){
+            const menu=document.getElementById('mobile-menu');
+            const toggle=document.getElementById('mobile-toggle');
+            if(menu.classList.contains('hidden')){menu.classList.remove('hidden');toggle.setAttribute('aria-expanded','true')}else{menu.classList.add('hidden');toggle.setAttribute('aria-expanded','false')}
+        }
+
+        // Initialization: Create cards, set current year, and activate home page
+        window.onload = function() {
+            // 1. Create all donation cards
+            donationTiers.forEach(createCard);
+            
+            // 2. Convert all &lt;i&gt; tags with data-lucide attributes into SVGs
+            lucide.createIcons();
+
+            // 3. Set current year in footer
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // 4. Set initial page to home and ensure nav is correct
+            navigate('home');
+        };
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</body>
+</html>
