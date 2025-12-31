@@ -1,1 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>High Rock Fundraiser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        setLogLevel('debug');
+
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            window.app = initializeApp(firebaseConfig);
+            window.auth = getAuth(window.app);
+        }
+
+        async function authenticate() {
+            if (!window.auth) return;
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(window.auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+            } catch (error) {
+                console.error("Firebase authentication failed:", error);
+            }
+        }
+        
+        onAuthStateChanged(window.auth, (user) => {
+            window.userId = user ? user.uid : 'anonymous-user';
+        });
+
+        authenticate();
+    </script>
+    <style>
+        :root{
+            --bg:#050505; 
+            --card:#0f0f10; 
+            --accent:#ff9a00; 
+            --muted:#9aa3ad;
+            --robux-blue: #3b82f6; 
+        }
+
+        html,body{height:100%;}
+        body{
+            font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+            background:linear-gradient(180deg,#030304 0%,#060607 60%);
+            color:#e6eef6;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        .glass{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);border-radius:16px;}
+        .accent{color:var(--accent)}
+        .btn-accent{
+            background:linear-gradient(90deg,var(--accent),#ffc07a);
+            color:#000;
+            font-weight:700;
+            border-radius:9999px;
+            padding:10px 22px;
+            display:inline-flex;
+            align-items:center;
+            gap:.6rem;
+            box-shadow:0 8px 30px rgba(255,154,0,0.12);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .btn-accent:hover{transform:translateY(-3px)}
+        .card-raise{transition:transform .25s ease,box-shadow .25s ease}
+        .card-raise:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+
+        .nav-link{position:relative;padding:.25rem 0; text-decoration: none !important;}
+        .nav-link::after{content:"";position:absolute;left:0;right:0;height:3px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+        .nav-link:hover::after,.nav-link.active::after{transform:scaleX(1)}
+        
+        .hero-media{position:absolute;inset:0;object-fit:cover;filter:brightness(.25);opacity:.95}
+        
+        .law-banner {
+            background: linear-gradient(90deg, #7f1d1d, #ef4444);
+            color: white;
+            text-align: center;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            z-index: 50;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- BANKING LAW NOTIFICATION -->
+    <div class="law-banner">
+        <div class="max-w-7xl mx-auto flex items-center justify-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            <span>USD payments have been disabled due to Dubai banking laws. Contributions are now digital-only.</span>
+        </div>
+    </div>
+
+    <!-- HEADER / NAV -->
+    <header class="sticky top-0 z-40 bg-[rgba(3,3,3,0.85)] backdrop-blur-md border-b border-[rgba(255,255,255,0.03)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+            <a href="#" class="flex items-center gap-3" onclick="navigate('home');return false;">
+                <div class="w-10 h-10 flex items-center justify-center">
+                    <img src="https://placehold.co/40x40/ff9a00/000000?text=HR" alt="High Rock Logo" class="w-full h-full object-contain rounded-lg">
+                </div>
+                <div>
+                    <div class="text-lg font-extrabold">High Rock</div>
+                    <div class="text-xs text-[var(--muted)] -mt-1">Fundraiser</div>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm text-[var(--muted)]">
+                <a class="nav-link active" href="#" data-page="home" onclick="navigate('home');return false;">Home</a>
+                <a class="nav-link" href="#" data-page="donation" onclick="navigate('donation');return false;">Donation</a>
+                <a class="nav-link" href="#" data-page="terms" onclick="navigate('terms');return false;">Terms</a>
+                <a class="nav-link" href="#" data-page="support" onclick="navigate('support');return false;">Support</a>
+            </nav>
+
+            <button class="md:hidden text-[var(--muted)]" onclick="toggleMobile()">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0a0a0b] border-b border-white/5 px-4 py-4 space-y-2">
+            <a class="block py-2 text-white" href="#" onclick="navigate('home');">Home</a>
+            <a class="block py-2 text-white" href="#" onclick="navigate('donation');">Donation</a>
+            <a class="block py-2 text-white" href="#" onclick="navigate('terms');">Terms</a>
+            <a class="block py-2 text-white" href="#" onclick="navigate('support');">Support</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- HOME SECTION -->
+        <section id="home" class="page-section">
+            <div class="relative h-[70vh] flex items-center justify-center overflow-hidden">
+                <img class="hero-media" src="https://placehold.co/1200x800/232323/232323" alt="Hero Background"/>
+                <div class="relative z-10 max-w-5xl px-6 text-center">
+                    <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4"><span class="accent">Fundraiser</span> for High Rock</h1>
+                    <p class="text-lg text-[var(--muted)] max-w-3xl mx-auto mb-8">
+                        Support the future of our community through professional brand expansion. Now accepting contributions via Robux.
+                    </p>
+                    <button class="btn-accent" onclick="navigate('donation');">
+                        <i data-lucide="gem" class="w-5 h-5"></i>
+                        Donate Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-6 py-16 text-center">
+                <p class="text-[var(--muted)] max-w-2xl mx-auto">
+                    <span class="accent font-semibold">Legal Note:</span> Due to regional regulations, we no longer process USD/Cash transactions. All funding is handled through digital platform assets to ensure full compliance with Dubai banking laws.
+                </p>
+            </div>
+        </section>
+
+        <!-- DONATION SECTION -->
+        <section id="donation" class="page-section py-16 hidden">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-extrabold"><span class="accent">Choose</span> Your Tier</h2>
+                    <p class="text-[var(--muted)] mt-2">Robux only. Digital asset transfers are used for server improvements.</p>
+                </div>
+                <div id="donation-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+        </section>
+
+        <!-- TERMS SECTION (RESTORED) -->
+        <section id="terms" class="page-section py-16 hidden">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 class="text-4xl font-extrabold mb-8 text-center"><span class="accent">Terms</span> of Service Agreement</h2>
+                
+                <!-- SPECIAL LEGAL OVERRIDE NOTICE -->
+                <div class="bg-red-900/20 border border-red-500/30 p-6 rounded-xl mb-10">
+                    <h3 class="text-red-400 font-bold mb-2 flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        USD Payment Suspension Notice
+                    </h3>
+                    <p class="text-sm text-red-100/70">
+                        In accordance with Dubai banking laws and regional financial directives, all USD and fiat currency payment gateways have been permanently disabled. This platform currently facilitates only digital asset contributions (Robux). Any mentions of USD/Cash in previous versions of these terms are superseded by this directive.
+                    </p>
+                </div>
+
+                <div class="lg:grid lg:grid-cols-4 gap-10">
+                    <nav class="lg:col-span-1 mb-8 lg:mb-0">
+                        <div class="lg:sticky lg:top-[calc(64px+4rem)] glass p-4 space-y-2">
+                            <h3 class="font-bold text-lg mb-2 text-white">Contents</h3>
+                            <div class="text-xs font-bold text-[var(--accent)] uppercase tracking-wider mb-2">Sections</div>
+                            <a href="#clause-1" class="block text-sm text-[var(--muted)] hover:text-white py-1">1. Acceptance</a>
+                            <a href="#clause-4" class="block text-sm text-[var(--muted)] hover:text-white py-1">4. Ownership</a>
+                            <a href="#clause-5" class="block text-sm text-[var(--muted)] hover:text-white py-1">5. IP Assignment</a>
+                            <a href="#clause-10" class="block text-sm text-[var(--muted)] hover:text-white py-1">10. Donation Finality</a>
+                            <a href="#clause-16" class="block text-sm text-[var(--muted)] hover:text-white py-1">16. Governing Law</a>
+                        </div>
+                    </nav>
+
+                    <div class="lg:col-span-3">
+                        <div class="glass p-8 space-y-8 text-[var(--muted)] leading-relaxed">
+                            <h3 class="font-bold text-2xl text-white">I. Governance</h3>
+                            <div id="clause-1">
+                                <h4 class="font-bold text-white mb-2">1. Acceptance of Terms</h4>
+                                <p>By accessing High Rock, you agree to these terms in full. Your use of digital asset donation features constitutes acceptance of our regional compliance measures.</p>
+                            </div>
+
+                            <div id="clause-2">
+                                <h4 class="font-bold text-white mb-2">2. Definitions</h4>
+                                <p>"Service Provider" refers to Vel1city. "Digital Contribution" refers to Robux-based transfers.</p>
+                            </div>
+
+                            <div id="clause-3">
+                                <h4 class="font-bold text-white mb-2">3. Modification</h4>
+                                <p>We reserve the right to modify these terms to remain compliant with changing banking laws.</p>
+                            </div>
+
+                            <h3 class="font-bold text-2xl text-white pt-6 border-t border-white/5">II. Intellectual Property</h3>
+                            <div id="clause-4">
+                                <h4 class="font-bold text-white mb-2">4. Ownership</h4>
+                                <p>The platform and its original assets are the exclusive property of Vel1city.</p>
+                            </div>
+
+                            <div id="clause-5">
+                                <h4 class="font-bold text-white mb-2">5. Assignment of Copyright</h4>
+                                <p>Users irrevocably assign all proprietary rights to content submitted through the platform to Vel1city.</p>
+                            </div>
+
+                            <div id="clause-6">
+                                <h4 class="font-bold text-white mb-2">6. User License</h4>
+                                <p>Users grant a worldwide, royalty-free license for any content not covered by the primary assignment.</p>
+                            </div>
+
+                            <h3 class="font-bold text-2xl text-white pt-6 border-t border-white/5">III. Fundraising Policy</h3>
+                            <div id="clause-7">
+                                <h4 class="font-bold text-white mb-2">7. Acceptable Use</h4>
+                                <p>Platform use must not violate international laws or local regional banking codes.</p>
+                            </div>
+
+                            <div id="clause-9">
+                                <h4 class="font-bold text-white mb-2">9. Fundraising Intent</h4>
+                                <p>Contributions are used for server brand development. 10% of proceeds are pledged to environmental initiatives.</p>
+                            </div>
+
+                            <div id="clause-10">
+                                <h4 class="font-bold text-white mb-2">10. Donation Finality and Compliance</h4>
+                                <p>All digital contributions are non-refundable. Due to the suspension of USD features, we cannot facilitate refunds for historical fiat transactions through this interface.</p>
+                            </div>
+
+                            <h3 class="font-bold text-2xl text-white pt-6 border-t border-white/5">IV. Liability</h3>
+                            <div id="clause-11">
+                                <h4 class="font-bold text-white mb-2">11. Disclaimer</h4>
+                                <p>The service is provided "AS IS". We make no warranties regarding platform availability.</p>
+                            </div>
+
+                            <div id="clause-12">
+                                <h4 class="font-bold text-white mb-2">12. Limitation of Liability</h4>
+                                <p>Vel1city is not liable for indirect damages or losses stemming from digital asset transfers.</p>
+                            </div>
+
+                            <div id="clause-13">
+                                <h4 class="font-bold text-white mb-2">13. Indemnification</h4>
+                                <p>Users agree to indemnify Vel1city against claims arising from their breach of these terms.</p>
+                            </div>
+
+                            <h3 class="font-bold text-2xl text-white pt-6 border-t border-white/5">V. Legal Clauses</h3>
+                            <div id="clause-16">
+                                <h4 class="font-bold text-white mb-2">16. Governing Law</h4>
+                                <p>These terms are governed by the laws of Delaware, subject to overriding local banking regulations where applicable.</p>
+                            </div>
+
+                            <div id="clause-17">
+                                <h4 class="font-bold text-white mb-2">17. Severability</h4>
+                                <p>If any clause is found invalid, the remaining terms shall stay in full effect.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPORT SECTION -->
+        <section id="support" class="page-section py-16 hidden">
+            <div class="max-w-3xl mx-auto px-6 text-center">
+                <div class="glass p-10">
+                    <i data-lucide="life-buoy" class="w-12 h-12 text-[var(--accent)] mx-auto mb-4"></i>
+                    <h2 class="text-3xl font-bold mb-4">Help Center</h2>
+                    <p class="text-[var(--muted)] mb-8">Please open a support ticket on Discord for any queries regarding payment compliance or server support.</p>
+                    <a href="https://discord.gg/HpreRKDQdY" target="_blank" class="btn-accent">
+                        <i data-lucide="external-link" class="w-5 h-5"></i>
+                        Discord Support
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 text-center text-[var(--muted)] text-sm">
+        <p>&copy; <span id="year"></span> High Rock | Regulatory Compliant Funding</p>
+    </footer>
+
+    <!-- PAYMENT MODAL -->
+    <div id="payment-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4" onclick="closeModal()">
+        <div class="modal-card-bg p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/5" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white" id="modal-title">Donation Details</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <p class="text-[var(--muted)] text-sm mb-6">Proceed to Roblox to complete this contribution. USD methods are currently unavailable.</p>
+
+            <a id="robux-link" target="_blank" class="bg-[var(--robux-blue)] hover:bg-blue-600 flex items-center justify-between p-5 rounded-xl font-bold text-lg text-white transition transform active:scale-95" onclick="closeModal()">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="gem" class="w-6 h-6"></i>
+                    <span>Donate with Robux</span>
+                </div>
+                <span id="robux-amount" class="opacity-80">R$0</span>
+            </a>
+            
+            <p class="text-[10px] text-[var(--muted)] mt-6 text-center uppercase tracking-widest">Compliance: Dubai Banking Directive #2024-B</p>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            ROBLOX_BASE: 'https://www.roblox.com/game-pass/',
+            TIERS: {
+                'tier-1': '1617074252', 'tier-2': '1616223998', 'tier-3': '1616338025',
+                'tier-4': '1615966183', 'tier-5': '1616715777', 'tier-6': '1616964316',
+                'tier-7': '1616767745', 'tier-8': '1616423871', 'tier-9': '1616894457',
+                'tier-10': '1616433996'
+            }
+        };
+
+        const donationData = [
+            { id: 'tier-1', amount: 5, title: "Small Support", icon: "heart" },
+            { id: 'tier-2', amount: 10, title: "Bronze Tier", icon: "flame" },
+            { id: 'tier-3', amount: 20, title: "Silver Tier", icon: "star" },
+            { id: 'tier-4', amount: 50, title: "Gold Tier", icon: "medal" },
+            { id: 'tier-5', amount: 100, title: "Platinum Tier", icon: "crown" },
+            { id: 'tier-6', amount: 200, title: "Diamond Tier", icon: "diamond" },
+            { id: 'tier-7', amount: 500, title: "Elite Tier", icon: "zap" },
+            { id: 'tier-8', amount: 1000, title: "Patron Tier", icon: "rocket" },
+            { id: 'tier-9', amount: 2000, title: "Legendary Tier", icon: "trophy" },
+            { id: 'tier-10', amount: 3000, title: "Celestial Tier", icon: "sunrise" },
+        ];
+
+        function navigate(page){
+            ['home','donation','terms','support'].forEach(p=>{
+                document.getElementById(p).classList.toggle('hidden', p !== page);
+            });
+            document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+            document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({top:0, behavior: 'smooth'});
+        }
+
+        function toggleMobile(){
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function openModal(id, amount, title) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('robux-link').href = `${config.ROBLOX_BASE}${config.TIERS[id]}/Donate`;
+            document.getElementById('robux-amount').textContent = `R$${amount.toLocaleString()}`;
+            const modal = document.getElementById('payment-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('payment-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function renderTiers() {
+            const grid = document.getElementById('donation-grid');
+            donationData.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'glass p-6 card-raise flex flex-col justify-between';
+                card.innerHTML = `
+                    <div>
+                        <i data-lucide="${t.icon}" class="w-8 h-8 text-[var(--accent)] mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">${t.title}</h3>
+                        <p class="text-4xl font-extrabold accent mb-4">R$ ${t.amount.toLocaleString()}</p>
+                    </div>
+                    <button class="btn-accent w-full justify-center" onclick="openModal('${t.id}', ${t.amount}, '${t.title}')">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Purchase
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.onload = () => {
+            renderTiers();
+            lucide.createIcons();
+            document.getElementById('year').textContent = new Date().getFullYear();
+        };
+    </script>
+</body>
+</html>
 
